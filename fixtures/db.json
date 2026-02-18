@@ -1,0 +1,14 @@
+{
+  "posts": [
+    { "id": 1, "title": "hello", "views": 12, "tags": ["news", "tech"] },
+    { "id": 2, "title": "world", "views": 5, "tags": ["life"] },
+    { "id": 3, "title": "hello again", "views": 40, "tags": ["tech"] }
+  ],
+  "comments": [
+    { "id": 1, "body": "first", "postId": 1 },
+    { "id": 2, "body": "second", "postId": 1 }
+  ],
+  "profile": {
+    "name": "typicode"
+  }
+}
