@@ -2,6 +2,14 @@
   "name": "mocy",
   "version": "0.1.0",
   "description": "Modern mock REST API server inspired by json-server, powered by SQLite.",
+  "homepage": "https://github.com/nektobit/mocy#readme",
+  "bugs": {
+    "url": "https://github.com/nektobit/mocy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nektobit/mocy.git"
+  },
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -26,7 +34,8 @@
     "format:write": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "json-server",
@@ -34,7 +43,7 @@
     "sqlite",
     "rest"
   ],
-  "author": "",
+  "author": "nektobit",
   "dependencies": {
     "better-sqlite3": "^11.10.0",
     "chokidar": "^4.0.3",
