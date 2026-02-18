@@ -4,6 +4,21 @@ mocy is a modern mock REST API server.
 
 It is inspired by [typicode/json-server](https://github.com/typicode/json-server) and aims for drop-in compatibility for common workflows.
 
+## Install
+
+- npm package: [https://www.npmjs.com/package/mocy](https://www.npmjs.com/package/mocy)
+
+```bash
+npm i -g mocy
+```
+
+Or without global install:
+
+```bash
+npm i mocy
+npx mocy db.json
+```
+
 ## Quickstart
 
 ```bash
