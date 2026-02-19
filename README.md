@@ -65,6 +65,26 @@ mocy export db.json
 
 Drop-in replacement for most common workflows; see compatibility notes in [`COMPATIBILITY.md`](./COMPATIBILITY.md).
 
+Feature comparison (current status):
+
+| Feature | json-server | mocy (current) | Notes |
+| --- | --- | --- | --- |
+| `db.json` -> REST API with zero config | Yes | Yes | `mocy db.json` |
+| Collection CRUD (`GET/POST/PUT/PATCH/DELETE`) | Yes | Yes | Core happy path supported |
+| Item routes (`/:resource/:id`) | Yes | Yes | Supported |
+| Singular resources (`/:resource` object) | Yes | Yes | Supported |
+| Field filters (`=`, `_lt`, `_lte`, `_gt`, `_gte`, `_ne`) | Yes | Yes | Supported |
+| Full-text search (`q`) | Yes (known issues in some versions) | Yes | `mocy` has regression coverage for known `q` cases |
+| Sorting (`_sort`, `_order`) | Yes | Yes | Supported |
+| Pagination (`_page`, `_per_page`) | Yes | Yes | Response shape aligned to current json-server beta behavior |
+| Range (`_start`, `_end`, `_limit`) | Yes | Yes | Supported |
+| Route rewrites | Yes | Yes | Via `--routes` |
+| Static file serving | Yes | Yes | Via `--static` |
+| `_embed` relations | Yes | No (not yet) | Planned |
+| Query execution in DB engine | No (lowdb/in-memory) | Partial | `mocy` stores in SQLite but list filtering/sorting is still done in memory today |
+| Persistence model | JSON file rewritten by server | SQLite internal + optional export | `mocy export db.json` available |
+| File watch sync behavior | Watches file | Watches file | `mocy` currently re-imports whole file on change |
+
 Supported baseline:
 
 - Collection CRUD (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`)
