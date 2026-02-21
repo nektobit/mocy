@@ -83,4 +83,13 @@ describe('http integration', () => {
     const patched = await request(app).patch('/profile').send({ role: 'admin' }).expect(200);
     expect(patched.body).toEqual({ name: 'typicode', role: 'admin' });
   });
+
+  it('returns deleted singular object on delete', async () => {
+    const app = createApp(store);
+
+    const removed = await request(app).delete('/profile').expect(200);
+    expect(removed.body).toEqual({ name: 'typicode' });
+
+    await request(app).delete('/profile').expect(404);
+  });
 });

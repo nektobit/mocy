@@ -198,9 +198,14 @@ export class SqliteStore {
     return next;
   }
 
-  public deleteSingular(resource: string): boolean {
-    const result = this.db.prepare('DELETE FROM singular WHERE resource = ?;').run(resource);
-    return result.changes > 0;
+  public deleteSingular(resource: string): JsonObject | null {
+    const existing = this.getSingular(resource);
+    if (!existing) {
+      return null;
+    }
+
+    this.db.prepare('DELETE FROM singular WHERE resource = ?;').run(resource);
+    return existing;
   }
 
   public async exportToJsonFile(targetPath = this.sourcePath): Promise<void> {

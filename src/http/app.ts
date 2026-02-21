@@ -216,7 +216,7 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
       return;
     }
 
-    res.json({});
+    res.json(removed);
   });
 
   app.use((_req, res) => {
