@@ -5,7 +5,6 @@ export interface FileWatcher {
 }
 
 export function watchFile(path: string, onChange: () => Promise<void>): FileWatcher {
-  let timer: NodeJS.Timeout | undefined;
   const watcher = chokidar.watch(path, {
     ignoreInitial: true,
     awaitWriteFinish: {
@@ -15,20 +14,11 @@ export function watchFile(path: string, onChange: () => Promise<void>): FileWatc
   });
 
   watcher.on('change', () => {
-    if (timer) {
-      clearTimeout(timer);
-    }
-
-    timer = setTimeout(() => {
-      void onChange();
-    }, 150);
+    void onChange();
   });
 
   return {
     async close() {
-      if (timer) {
-        clearTimeout(timer);
-      }
       await watcher.close();
     }
   };
