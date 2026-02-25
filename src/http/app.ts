@@ -2,7 +2,7 @@ import express, { Response } from 'express';
 import { parseListQuery } from '../core/query.js';
 import { JsonObject } from '../core/types.js';
 import { SqliteStore } from '../storage/sqliteStore.js';
-import { RouteMap, rewriteUrl } from './rewrite.js';
+import { compileRouteMap, RouteMap, rewriteUrl } from './rewrite.js';
 
 export interface AppOptions {
   routeMap?: RouteMap;
@@ -12,6 +12,7 @@ export interface AppOptions {
 
 export function createApp(store: SqliteStore, options: AppOptions = {}): express.Express {
   const app = express();
+  const compiledRoutes = options.routeMap ? compileRouteMap(options.routeMap) : undefined;
 
   app.use(express.json({ limit: '10mb' }));
   app.use((req, res, next) => {
@@ -25,8 +26,8 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
       return;
     }
 
-    if (options.routeMap) {
-      req.url = rewriteUrl(req.path, options.routeMap) + (req.url.includes('?') ? `?${req.url.split('?')[1]}` : '');
+    if (compiledRoutes) {
+      req.url = rewriteUrl(req.path, compiledRoutes) + (req.url.includes('?') ? `?${req.url.split('?')[1]}` : '');
     }
 
     next();
