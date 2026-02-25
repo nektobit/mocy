@@ -5,6 +5,7 @@ mocy targets compatibility with `json-server` common REST flows.
 ## Current behavior alignment
 
 - IDs are stored and returned as strings for collection items (matching current json-server behavior).
+- `--id-mode compat` preserves json-server-like 4-hex generated IDs when compatibility is needed.
 - `_page` + `_per_page` responses return pagination metadata with `data` payload.
 - `DELETE /:resource/:id` returns the removed item body.
 

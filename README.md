@@ -81,7 +81,7 @@ Feature comparison (current status):
 | Route rewrites | Yes | Yes | Via `--routes` |
 | Static file serving | Yes | Yes | Via `--static` |
 | `_embed` relations | Yes | No (not yet) | Planned |
-| Query execution in DB engine | No (lowdb/in-memory) | Partial | `mocy` stores in SQLite but list filtering/sorting is still done in memory today |
+| Query execution in DB engine | No (lowdb/in-memory) | Yes | List filters/sort/pagination execute via SQL queries |
 | Persistence model | JSON file rewritten by server | SQLite internal + optional export | `mocy export db.json` available |
 | File watch sync behavior | Watches file | Watches file | `mocy` currently re-imports whole file on change |
 
@@ -97,6 +97,15 @@ Supported baseline:
 - Range slicing (`_start`, `_end`, `_limit`)
 - Route rewrites (`--routes routes.json`)
 - Static files (`--static public`)
+
+## ID Generation Modes
+
+For collection `POST` without an explicit `id`:
+
+- Default: `safe` mode generates 16-hex IDs and retries on collisions.
+- Compatibility mode: `--id-mode compat` keeps 4-hex json-server-like IDs.
+
+If a client provides an already existing `id`, mocy returns `409` with a duplicate ID error.
 
 ## Why mocy
 

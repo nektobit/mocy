@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { SqliteStore } from './storage/sqliteStore.js';
+import { IdGenerationMode, SqliteStore } from './storage/sqliteStore.js';
 import { startMocyServer } from './server.js';
 
 const program = new Command();
@@ -13,6 +13,7 @@ interface ServeOptions {
   static?: string;
   routes?: string;
   sqlite?: string;
+  idMode: string;
   watch: boolean;
 }
 
@@ -29,6 +30,7 @@ program
   .option('-s, --static <dir>', 'Static directory path')
   .option('-r, --routes <file>', 'Routes rewrite file path')
   .option('--sqlite <file>', 'SQLite file path')
+  .option('--id-mode <mode>', 'ID generation mode: safe (default) or compat', 'safe')
   .option('--no-watch', 'Disable db.json file watching')
   .action(async (dbPath, options: ServeOptions) => {
     const dbInput = typeof dbPath === 'string' ? dbPath : 'db.json';
@@ -41,11 +43,18 @@ program
 
     const port = Number.parseInt(options.port, 10);
     const host = options.host;
+    const idMode = parseIdMode(options.idMode);
+    if (!idMode) {
+      process.stderr.write(`Invalid --id-mode value "${options.idMode}". Use "safe" or "compat".\n`);
+      process.exitCode = 1;
+      return;
+    }
 
     const startOptions = {
       dbPath: resolvedDb,
       host,
       port: Number.isFinite(port) ? port : 3000,
+      idMode,
       watch: options.watch
     };
 
@@ -97,5 +106,12 @@ program
     store.close();
     process.stdout.write(`Exported data to ${targetPath}\n`);
   });
+
+function parseIdMode(value: string): IdGenerationMode | null {
+  if (value === 'safe' || value === 'compat') {
+    return value;
+  }
+  return null;
+}
 
 void program.parseAsync(process.argv);

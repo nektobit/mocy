@@ -3,12 +3,13 @@ import path from 'node:path';
 import { createServer, Server } from 'node:http';
 import { createApp } from './http/app.js';
 import { RouteMap } from './http/rewrite.js';
-import { SqliteStore } from './storage/sqliteStore.js';
+import { IdGenerationMode, SqliteStore, StorageInit } from './storage/sqliteStore.js';
 import { FileWatcher, watchFile } from './storage/watch.js';
 
 export interface StartOptions {
   dbPath: string;
   sqlitePath?: string;
+  idMode?: IdGenerationMode;
   host: string;
   port: number;
   staticDir?: string;
@@ -25,7 +26,14 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
   const dbPath = path.resolve(options.dbPath);
   const sqlitePath = path.resolve(options.sqlitePath ?? path.join(path.dirname(dbPath), '.mocy', 'mocy.sqlite'));
 
-  const store = new SqliteStore({ sourcePath: dbPath, sqlitePath });
+  const storageInit: StorageInit = {
+    sourcePath: dbPath,
+    sqlitePath
+  };
+  if (options.idMode) {
+    storageInit.idMode = options.idMode;
+  }
+  const store = new SqliteStore(storageInit);
   await store.importFromJsonFile();
 
   const routeMap = loadRoutes(options.routesPath);

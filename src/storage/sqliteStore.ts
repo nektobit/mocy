@@ -22,17 +22,24 @@ interface RawDataRecord {
   data: string;
 }
 
+const MAX_GENERATED_ID_ATTEMPTS = 128;
+
+export type IdGenerationMode = 'safe' | 'compat';
+
 export interface StorageInit {
   sourcePath: string;
   sqlitePath: string;
+  idMode?: IdGenerationMode;
 }
 
 export class SqliteStore {
   private readonly db: Database.Database;
   private readonly sourcePath: string;
+  private readonly idMode: IdGenerationMode;
 
   public constructor(config: StorageInit) {
     this.sourcePath = config.sourcePath;
+    this.idMode = config.idMode ?? 'safe';
     const dbDir = path.dirname(config.sqlitePath);
     this.ensureDirectory(dbDir);
     this.db = new Database(config.sqlitePath);
@@ -55,8 +62,16 @@ export class SqliteStore {
 
       for (const [resource, value] of Object.entries(payload)) {
         if (Array.isArray(value)) {
+          const usedIds = new Set<string>();
           value.forEach((entry, index) => {
-            const normalized = normalizeRecord(entry, String(index + 1));
+            const normalized = normalizeRecord(entry, String(index + 1), {
+              isTaken: (candidate) => usedIds.has(candidate),
+              nextId: () => this.generateCandidateId()
+            });
+            if (usedIds.has(normalized.id)) {
+              throw new Error(`Duplicate id "${normalized.id}" in source collection "${resource}"`);
+            }
+            usedIds.add(normalized.id);
             insertRecord.run(resource, normalized.id, 'string', JSON.stringify(normalized.record));
           });
           continue;
@@ -160,7 +175,7 @@ export class SqliteStore {
 
   public create(resource: string, input: JsonObject): JsonObject {
     const newRecord = { ...input };
-    const id = input.id === undefined ? this.generateNextId() : toIdString(input.id);
+    const id = input.id === undefined ? this.generateUniqueId(resource) : toIdString(input.id);
     newRecord.id = id;
 
     const existing = this.get(resource, id);
@@ -466,15 +481,37 @@ export class SqliteStore {
     mkdirSync(dir, { recursive: true });
   }
 
-  private generateNextId(): string {
-    return randomId();
+  private generateUniqueId(resource: string): string {
+    for (let attempt = 0; attempt < MAX_GENERATED_ID_ATTEMPTS; attempt += 1) {
+      const candidate = this.generateCandidateId();
+      if (!this.get(resource, candidate)) {
+        return candidate;
+      }
+    }
+
+    throw new Error(
+      `Unable to generate unique id for resource "${resource}" after ${MAX_GENERATED_ID_ATTEMPTS} attempts`
+    );
+  }
+
+  private generateCandidateId(): string {
+    return this.idMode === 'compat' ? compatId() : safeId();
   }
 }
 
-function normalizeRecord(value: JsonValue, fallbackId: string): { id: string; record: JsonObject } {
+interface IdGenerationContext {
+  isTaken: (id: string) => boolean;
+  nextId: () => string;
+}
+
+function normalizeRecord(
+  value: JsonValue,
+  fallbackId: string,
+  idGeneration: IdGenerationContext
+): { id: string; record: JsonObject } {
   if (isObject(value)) {
     if (value.id === undefined) {
-      const id = randomId();
+      const id = generateUniqueImportId(idGeneration);
       return {
         id,
         record: {
@@ -512,6 +549,17 @@ function normalizeRecord(value: JsonValue, fallbackId: string): { id: string; re
       value
     }
   };
+}
+
+function generateUniqueImportId(context: IdGenerationContext): string {
+  for (let attempt = 0; attempt < MAX_GENERATED_ID_ATTEMPTS; attempt += 1) {
+    const candidate = context.nextId();
+    if (!context.isTaken(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Unable to generate unique id during import after ${MAX_GENERATED_ID_ATTEMPTS} attempts`);
 }
 
 function isObject(value: JsonValue): value is JsonObject {
@@ -630,6 +678,10 @@ function escapeLikePattern(value: string): string {
   return value.replace(/[\\%_]/g, '\\$&');
 }
 
-function randomId(): string {
+function compatId(): string {
   return randomBytes(2).toString('hex');
+}
+
+function safeId(): string {
+  return randomBytes(8).toString('hex');
 }

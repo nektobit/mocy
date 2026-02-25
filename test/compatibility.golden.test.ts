@@ -37,7 +37,11 @@ describe('compatibility harness', () => {
     const jsonServerApp = createJsonServerApp(low);
 
     const tempSqlite = path.resolve('.mocy', `compat-${Date.now()}.sqlite`);
-    const store = new SqliteStore({ sourcePath: fixturePath, sqlitePath: tempSqlite });
+    const store = new SqliteStore({
+      sourcePath: fixturePath,
+      sqlitePath: tempSqlite,
+      idMode: 'compat'
+    });
     store.importData(JSON.parse(JSON.stringify(fixture)) as DbSchema);
     const mocyApp = createMocyApp(store);
 
