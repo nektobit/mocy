@@ -13,5 +13,6 @@ mocy targets compatibility with `json-server` common REST flows.
 
 - Storage is SQLite-backed internally (`.mocy/mocy.sqlite`) instead of lowdb JSON writes.
 - `mocy export db.json` is explicit by default (continuous JSON rewriting is avoided).
+- File watch sync defaults to non-destructive merge; destructive replace is explicit via `--watch-sync replace`.
 
 If you find a behavior mismatch in a common json-server workflow, please open an issue with a minimal fixture and request/response example.

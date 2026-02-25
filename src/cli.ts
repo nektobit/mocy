@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { IdGenerationMode, SqliteStore } from './storage/sqliteStore.js';
+import { IdGenerationMode, ImportMode, SqliteStore } from './storage/sqliteStore.js';
 import { startMocyServer } from './server.js';
 
 const program = new Command();
@@ -14,6 +14,7 @@ interface ServeOptions {
   routes?: string;
   sqlite?: string;
   idMode: string;
+  watchSync: string;
   watch: boolean;
 }
 
@@ -31,6 +32,7 @@ program
   .option('-r, --routes <file>', 'Routes rewrite file path')
   .option('--sqlite <file>', 'SQLite file path')
   .option('--id-mode <mode>', 'ID generation mode: safe (default) or compat', 'safe')
+  .option('--watch-sync <mode>', 'Watch sync mode: safe (default) or replace', 'safe')
   .option('--no-watch', 'Disable db.json file watching')
   .action(async (dbPath, options: ServeOptions) => {
     const dbInput = typeof dbPath === 'string' ? dbPath : 'db.json';
@@ -49,12 +51,19 @@ program
       process.exitCode = 1;
       return;
     }
+    const watchSyncMode = parseWatchSyncMode(options.watchSync);
+    if (!watchSyncMode) {
+      process.stderr.write(`Invalid --watch-sync value "${options.watchSync}". Use "safe" or "replace".\n`);
+      process.exitCode = 1;
+      return;
+    }
 
     const startOptions = {
       dbPath: resolvedDb,
       host,
       port: Number.isFinite(port) ? port : 3000,
       idMode,
+      watchSyncMode,
       watch: options.watch
     };
 
@@ -110,6 +119,16 @@ program
 function parseIdMode(value: string): IdGenerationMode | null {
   if (value === 'safe' || value === 'compat') {
     return value;
+  }
+  return null;
+}
+
+function parseWatchSyncMode(value: string): ImportMode | null {
+  if (value === 'safe') {
+    return 'merge';
+  }
+  if (value === 'replace') {
+    return 'replace';
   }
   return null;
 }

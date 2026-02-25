@@ -8,12 +8,13 @@ import { SqliteStore } from '../src/storage/sqliteStore.js';
 
 describe('http integration', () => {
   let tempDir = '';
+  let dbPath = '';
   let store: SqliteStore;
 
   beforeEach(async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'mocy-'));
     const fixture = path.resolve('fixtures/db.json');
-    const dbPath = path.join(tempDir, 'db.json');
+    dbPath = path.join(tempDir, 'db.json');
     await writeFile(dbPath, await readFile(fixture, 'utf8'), 'utf8');
 
     store = new SqliteStore({
@@ -72,6 +73,38 @@ describe('http integration', () => {
 
     await request(app).delete(`/posts/${id}`).expect(200);
     await request(app).get(`/posts/${id}`).expect(404);
+  });
+
+  it('preserves API-created records on merge import mode', async () => {
+    const app = createApp(store);
+    const created = await request(app).post('/posts').send({ title: 'api-created', views: 99 }).expect(201);
+    const createdId = created.body.id as string;
+
+    const snapshot = JSON.parse(await readFile(dbPath, 'utf8')) as {
+      posts: Array<{ id: number; title: string; views: number; tags: string[] }>;
+    };
+    snapshot.posts = snapshot.posts.map((entry) =>
+      entry.id === 1 ? { ...entry, title: 'hello from file update' } : entry
+    );
+    await writeFile(dbPath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
+
+    await store.importFromJsonFile('merge');
+
+    const existing = await request(app).get(`/posts/${createdId}`).expect(200);
+    expect(existing.body).toMatchObject({ id: createdId, title: 'api-created', views: 99 });
+
+    const fileUpdated = await request(app).get('/posts/1').expect(200);
+    expect(fileUpdated.body.title).toBe('hello from file update');
+  });
+
+  it('allows explicit destructive replace import mode', async () => {
+    const app = createApp(store);
+    const created = await request(app).post('/posts').send({ title: 'ephemeral', views: 1 }).expect(201);
+    const createdId = created.body.id as string;
+
+    await store.importFromJsonFile('replace');
+
+    await request(app).get(`/posts/${createdId}`).expect(404);
   });
 
   it('handles singular resources', async () => {

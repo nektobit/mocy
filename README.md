@@ -54,7 +54,8 @@ mocy uses SQLite internally for speed and safety; you still work with `db.json`.
 
 - Input stays `db.json`
 - SQLite is stored at `.mocy/mocy.sqlite` by default
-- `db.json` changes are watched and re-imported automatically
+- `db.json` changes are watched and merged automatically by default (`--watch-sync safe`)
+- Explicit destructive mode is available with `--watch-sync replace`
 - Export current state back to JSON with:
 
 ```bash
@@ -83,7 +84,7 @@ Feature comparison (current status):
 | `_embed` relations | Yes | No (not yet) | Planned |
 | Query execution in DB engine | No (lowdb/in-memory) | Yes | List filters/sort/pagination execute via SQL queries |
 | Persistence model | JSON file rewritten by server | SQLite internal + optional export | `mocy export db.json` available |
-| File watch sync behavior | Watches file | Watches file | `mocy` currently re-imports whole file on change |
+| File watch sync behavior | Watches file | Watches file | Default is non-destructive merge; `--watch-sync replace` is explicit destructive mode |
 
 Supported baseline:
 

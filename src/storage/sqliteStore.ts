@@ -25,6 +25,7 @@ interface RawDataRecord {
 const MAX_GENERATED_ID_ATTEMPTS = 128;
 
 export type IdGenerationMode = 'safe' | 'compat';
+export type ImportMode = 'replace' | 'merge';
 
 export interface StorageInit {
   sourcePath: string;
@@ -50,47 +51,19 @@ export class SqliteStore {
     this.db.close();
   }
 
-  public importData(input: DbSchema): void {
-    const transaction = this.db.transaction((payload: DbSchema) => {
-      this.db.exec('DELETE FROM records;');
-      this.db.exec('DELETE FROM singular;');
+  public importData(input: DbSchema, mode: ImportMode = 'replace'): void {
+    if (mode === 'replace') {
+      this.replaceData(input);
+      return;
+    }
 
-      const insertRecord = this.db.prepare(
-        'INSERT INTO records(resource, id, id_type, data) VALUES (?, ?, ?, ?);'
-      );
-      const insertSingular = this.db.prepare('INSERT INTO singular(resource, data) VALUES (?, ?);');
-
-      for (const [resource, value] of Object.entries(payload)) {
-        if (Array.isArray(value)) {
-          const usedIds = new Set<string>();
-          value.forEach((entry, index) => {
-            const normalized = normalizeRecord(entry, String(index + 1), {
-              isTaken: (candidate) => usedIds.has(candidate),
-              nextId: () => this.generateCandidateId()
-            });
-            if (usedIds.has(normalized.id)) {
-              throw new Error(`Duplicate id "${normalized.id}" in source collection "${resource}"`);
-            }
-            usedIds.add(normalized.id);
-            insertRecord.run(resource, normalized.id, 'string', JSON.stringify(normalized.record));
-          });
-          continue;
-        }
-
-        if (isObject(value)) {
-          insertSingular.run(resource, JSON.stringify(value));
-          continue;
-        }
-      }
-    });
-
-    transaction(input);
+    this.mergeData(input);
   }
 
-  public async importFromJsonFile(): Promise<void> {
+  public async importFromJsonFile(mode: ImportMode = 'replace'): Promise<void> {
     const contents = await readFile(this.sourcePath, 'utf8');
     const parsed = JSON.parse(contents) as DbSchema;
-    this.importData(parsed);
+    this.importData(parsed, mode);
   }
 
   public listResources(): string[] {
@@ -297,6 +270,83 @@ export class SqliteStore {
     return result;
   }
 
+  private replaceData(payload: DbSchema): void {
+    const transaction = this.db.transaction((nextPayload: DbSchema) => {
+      this.db.exec('DELETE FROM records;');
+      this.db.exec('DELETE FROM singular;');
+
+      const insertRecord = this.db.prepare(
+        'INSERT INTO records(resource, id, id_type, data) VALUES (?, ?, ?, ?);'
+      );
+      const insertSingular = this.db.prepare('INSERT INTO singular(resource, data) VALUES (?, ?);');
+
+      for (const [resource, value] of Object.entries(nextPayload)) {
+        if (Array.isArray(value)) {
+          const usedIds = new Set<string>();
+          value.forEach((entry, index) => {
+            const normalized = normalizeRecord(entry, String(index + 1), {
+              isTaken: (candidate) => usedIds.has(candidate),
+              nextId: () => this.generateCandidateId()
+            });
+            if (usedIds.has(normalized.id)) {
+              throw new Error(`Duplicate id "${normalized.id}" in source collection "${resource}"`);
+            }
+            usedIds.add(normalized.id);
+            insertRecord.run(resource, normalized.id, 'string', JSON.stringify(normalized.record));
+          });
+          continue;
+        }
+
+        if (isObject(value)) {
+          insertSingular.run(resource, JSON.stringify(value));
+        }
+      }
+    });
+
+    transaction(payload);
+  }
+
+  private mergeData(payload: DbSchema): void {
+    const transaction = this.db.transaction((nextPayload: DbSchema) => {
+      const upsertRecord = this.db.prepare(
+        `INSERT INTO records(resource, id, id_type, data)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(resource, id) DO UPDATE SET
+           id_type = excluded.id_type,
+           data = excluded.data;`
+      );
+      const upsertSingular = this.db.prepare(
+        `INSERT INTO singular(resource, data)
+         VALUES (?, ?)
+         ON CONFLICT(resource) DO UPDATE SET data = excluded.data;`
+      );
+
+      for (const [resource, value] of Object.entries(nextPayload)) {
+        if (Array.isArray(value)) {
+          const sourceIds = new Set<string>();
+          value.forEach((entry, index) => {
+            const normalized = normalizeRecord(entry, String(index + 1), {
+              isTaken: (candidate) => sourceIds.has(candidate) || this.recordExists(resource, candidate),
+              nextId: () => this.generateCandidateId()
+            });
+            if (sourceIds.has(normalized.id)) {
+              throw new Error(`Duplicate id "${normalized.id}" in source collection "${resource}"`);
+            }
+            sourceIds.add(normalized.id);
+            upsertRecord.run(resource, normalized.id, 'string', JSON.stringify(normalized.record));
+          });
+          continue;
+        }
+
+        if (isObject(value)) {
+          upsertSingular.run(resource, JSON.stringify(value));
+        }
+      }
+    });
+
+    transaction(payload);
+  }
+
   private addFilterClauses(query: ListQuery, clauses: string[], params: unknown[]): void {
     for (const filter of query.filters) {
       clauses.push('mocy_filter_match(data, ?, ?, ?) = 1');
@@ -475,6 +525,13 @@ export class SqliteStore {
       const numeric = asNumber(getPath(record, field));
       return Number.isFinite(numeric) ? 0 : 1;
     });
+  }
+
+  private recordExists(resource: string, id: string): boolean {
+    const row = this.db
+      .prepare('SELECT 1 AS has_row FROM records WHERE resource = ? AND id = ? LIMIT 1;')
+      .get(resource, id) as { has_row: number } | undefined;
+    return row !== undefined;
   }
 
   private ensureDirectory(dir: string): void {

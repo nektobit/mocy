@@ -3,13 +3,14 @@ import path from 'node:path';
 import { createServer, Server } from 'node:http';
 import { createApp } from './http/app.js';
 import { RouteMap } from './http/rewrite.js';
-import { IdGenerationMode, SqliteStore, StorageInit } from './storage/sqliteStore.js';
+import { IdGenerationMode, ImportMode, SqliteStore, StorageInit } from './storage/sqliteStore.js';
 import { FileWatcher, watchFile } from './storage/watch.js';
 
 export interface StartOptions {
   dbPath: string;
   sqlitePath?: string;
   idMode?: IdGenerationMode;
+  watchSyncMode?: ImportMode;
   host: string;
   port: number;
   staticDir?: string;
@@ -34,7 +35,7 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
     storageInit.idMode = options.idMode;
   }
   const store = new SqliteStore(storageInit);
-  await store.importFromJsonFile();
+  await store.importFromJsonFile('replace');
 
   const routeMap = loadRoutes(options.routesPath);
 
@@ -54,7 +55,7 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
   let watcher: FileWatcher | undefined;
   if (options.watch) {
     watcher = watchFile(dbPath, async () => {
-      await store.importFromJsonFile();
+      await store.importFromJsonFile(options.watchSyncMode ?? 'merge');
     });
   }
 
