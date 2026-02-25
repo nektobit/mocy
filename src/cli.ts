@@ -15,6 +15,7 @@ interface ServeOptions {
   sqlite?: string;
   idMode: string;
   watchSync: string;
+  logRequests: boolean;
   watch: boolean;
 }
 
@@ -33,6 +34,7 @@ program
   .option('--sqlite <file>', 'SQLite file path')
   .option('--id-mode <mode>', 'ID generation mode: safe (default) or compat', 'safe')
   .option('--watch-sync <mode>', 'Watch sync mode: safe (default) or replace', 'safe')
+  .option('--log-requests', 'Enable request-level logging (method path status duration)')
   .option('--no-watch', 'Disable db.json file watching')
   .action(async (dbPath, options: ServeOptions) => {
     const dbInput = typeof dbPath === 'string' ? dbPath : 'db.json';
@@ -64,6 +66,7 @@ program
       port: Number.isFinite(port) ? port : 3000,
       idMode,
       watchSyncMode,
+      requestLogging: options.logRequests,
       watch: options.watch
     };
 

@@ -109,6 +109,16 @@ For collection `POST` without an explicit `id`:
 
 If a client provides an already existing `id`, mocy returns `409` with a duplicate ID error.
 
+## Request Logging
+
+Request logs are off by default. Enable them explicitly:
+
+```bash
+mocy db.json --log-requests
+```
+
+Log format includes method, path, status and duration (ms).
+
 ## Why mocy
 
 - Better performance for write-heavy usage (no full JSON rewrite per request)

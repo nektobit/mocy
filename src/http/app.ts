@@ -4,17 +4,42 @@ import { JsonObject } from '../core/types.js';
 import { SqliteStore } from '../storage/sqliteStore.js';
 import { compileRouteMap, RouteMap, rewriteUrl } from './rewrite.js';
 
+export interface RequestLogEntry {
+  method: string;
+  path: string;
+  status: number;
+  durationMs: number;
+}
+
 export interface AppOptions {
   routeMap?: RouteMap;
   staticDir?: string;
+  requestLogger?: (entry: RequestLogEntry) => void;
   plugins?: Array<(app: express.Express) => void>;
 }
 
 export function createApp(store: SqliteStore, options: AppOptions = {}): express.Express {
   const app = express();
   const compiledRoutes = options.routeMap ? compileRouteMap(options.routeMap) : undefined;
+  const requestLogger = options.requestLogger;
 
   app.use(express.json({ limit: '10mb' }));
+  if (requestLogger) {
+    app.use((req, res, next) => {
+      const startedAt = process.hrtime.bigint();
+      res.on('finish', () => {
+        const elapsedMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+        requestLogger({
+          method: req.method,
+          path: req.originalUrl,
+          status: res.statusCode,
+          durationMs: elapsedMs
+        });
+      });
+      next();
+    });
+  }
+
   app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');

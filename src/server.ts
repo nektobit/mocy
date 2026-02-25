@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { createServer, Server } from 'node:http';
-import { createApp } from './http/app.js';
+import { createApp, RequestLogEntry } from './http/app.js';
 import { RouteMap } from './http/rewrite.js';
 import { IdGenerationMode, ImportMode, SqliteStore, StorageInit } from './storage/sqliteStore.js';
 import { FileWatcher, watchFile } from './storage/watch.js';
@@ -11,6 +11,7 @@ export interface StartOptions {
   sqlitePath?: string;
   idMode?: IdGenerationMode;
   watchSyncMode?: ImportMode;
+  requestLogging?: boolean;
   host: string;
   port: number;
   staticDir?: string;
@@ -39,12 +40,23 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
 
   const routeMap = loadRoutes(options.routesPath);
 
-  const appOptions: { routeMap?: RouteMap; staticDir?: string } = {};
+  const appOptions: {
+    routeMap?: RouteMap;
+    staticDir?: string;
+    requestLogger?: (entry: RequestLogEntry) => void;
+  } = {};
   if (routeMap) {
     appOptions.routeMap = routeMap;
   }
   if (options.staticDir) {
     appOptions.staticDir = options.staticDir;
+  }
+  if (options.requestLogging) {
+    appOptions.requestLogger = (entry) => {
+      process.stdout.write(
+        `${entry.method} ${entry.path} ${entry.status} ${entry.durationMs.toFixed(1)}ms\n`
+      );
+    };
   }
 
   const app = createApp(store, appOptions);

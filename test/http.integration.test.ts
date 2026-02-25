@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createApp } from '../src/http/app.js';
+import { createApp, RequestLogEntry } from '../src/http/app.js';
 import { SqliteStore } from '../src/storage/sqliteStore.js';
 
 describe('http integration', () => {
@@ -59,6 +59,25 @@ describe('http integration', () => {
       items: 3
     });
     expect(res.body.data).toHaveLength(2);
+  });
+
+  it('emits request log entries when logger is enabled', async () => {
+    const logs: RequestLogEntry[] = [];
+    const app = createApp(store, {
+      requestLogger: (entry) => {
+        logs.push(entry);
+      }
+    });
+
+    await request(app).get('/posts?_page=1').expect(200);
+
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({
+      method: 'GET',
+      path: '/posts?_page=1',
+      status: 200
+    });
+    expect(logs[0]?.durationMs ?? -1).toBeGreaterThanOrEqual(0);
   });
 
   it('creates, updates and deletes record', async () => {
