@@ -1,5 +1,5 @@
 import express, { Response } from 'express';
-import { applyListQuery, parseListQuery } from '../core/query.js';
+import { parseListQuery } from '../core/query.js';
 import { JsonObject } from '../core/types.js';
 import { SqliteStore } from '../storage/sqliteStore.js';
 import { RouteMap, rewriteUrl } from './rewrite.js';
@@ -53,9 +53,8 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
     }
 
     if (store.hasCollection(resource)) {
-      const rows = store.list(resource).map((entry) => entry.value);
       const query = parseListQuery(req.query as Record<string, string | string[] | undefined>);
-      const result = applyListQuery(rows, query);
+      const result = store.queryCollection(resource, query);
 
       if (result.page !== undefined && result.perPage !== undefined) {
         const pages = Math.max(1, Math.ceil(result.total / result.perPage));
