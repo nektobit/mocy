@@ -23,7 +23,12 @@ describe('sqlite id generation', () => {
     openedStores.forEach((store) => {
       store.close();
     });
-    await rm(tempDir, { recursive: true, force: true });
+    await rm(tempDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 50
+    });
   });
 
   it('generates safe IDs by default', async () => {
