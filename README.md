@@ -67,6 +67,14 @@ mocy export db.json
 
 Drop-in replacement for most common workflows; see compatibility notes in [`COMPATIBILITY.md`](./COMPATIBILITY.md).
 
+Important for developers:
+- Default ID generation is `safe` (16-hex IDs), which is safer but not json-server-like.
+- For strict json-server-like generated IDs, run with `--id-mode compat`.
+
+```bash
+mocy db.json --id-mode compat
+```
+
 Feature comparison (current status):
 
 | Feature | json-server | mocy (current) | Notes |

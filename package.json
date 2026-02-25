@@ -1,6 +1,6 @@
 {
   "name": "mocy",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Modern mock REST API server inspired by json-server, powered by SQLite.",
   "homepage": "https://github.com/nektobit/mocy#readme",
   "bugs": {
