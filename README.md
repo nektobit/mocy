@@ -54,6 +54,7 @@ mocy uses SQLite internally for speed and safety; you still work with `db.json`.
 
 - Input stays `db.json`
 - SQLite is stored at `.mocy/mocy.sqlite` by default
+- Existing SQLite files with legacy `id_type` schema are auto-migrated
 - `db.json` changes are watched and merged automatically by default (`--watch-sync safe`)
 - Explicit destructive mode is available with `--watch-sync replace`
 - Export current state back to JSON with:

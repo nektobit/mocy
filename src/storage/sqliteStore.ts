@@ -157,8 +157,8 @@ export class SqliteStore {
     }
 
     this.db
-      .prepare('INSERT INTO records(resource, id, id_type, data) VALUES (?, ?, ?, ?);')
-      .run(resource, id, 'string', JSON.stringify(newRecord));
+      .prepare('INSERT INTO records(resource, id, data) VALUES (?, ?, ?);')
+      .run(resource, id, JSON.stringify(newRecord));
 
     return newRecord;
   }
@@ -173,8 +173,8 @@ export class SqliteStore {
     const nextRecord = { ...input, id: currentId };
 
     this.db
-      .prepare('UPDATE records SET data = ?, id_type = ? WHERE resource = ? AND id = ?;')
-      .run(JSON.stringify(nextRecord), 'string', resource, id);
+      .prepare('UPDATE records SET data = ? WHERE resource = ? AND id = ?;')
+      .run(JSON.stringify(nextRecord), resource, id);
 
     return nextRecord;
   }
@@ -192,8 +192,8 @@ export class SqliteStore {
     };
 
     this.db
-      .prepare('UPDATE records SET data = ?, id_type = ? WHERE resource = ? AND id = ?;')
-      .run(JSON.stringify(nextRecord), 'string', resource, id);
+      .prepare('UPDATE records SET data = ? WHERE resource = ? AND id = ?;')
+      .run(JSON.stringify(nextRecord), resource, id);
 
     return nextRecord;
   }
@@ -276,7 +276,7 @@ export class SqliteStore {
       this.db.exec('DELETE FROM singular;');
 
       const insertRecord = this.db.prepare(
-        'INSERT INTO records(resource, id, id_type, data) VALUES (?, ?, ?, ?);'
+        'INSERT INTO records(resource, id, data) VALUES (?, ?, ?);'
       );
       const insertSingular = this.db.prepare('INSERT INTO singular(resource, data) VALUES (?, ?);');
 
@@ -292,7 +292,7 @@ export class SqliteStore {
               throw new Error(`Duplicate id "${normalized.id}" in source collection "${resource}"`);
             }
             usedIds.add(normalized.id);
-            insertRecord.run(resource, normalized.id, 'string', JSON.stringify(normalized.record));
+            insertRecord.run(resource, normalized.id, JSON.stringify(normalized.record));
           });
           continue;
         }
@@ -309,10 +309,9 @@ export class SqliteStore {
   private mergeData(payload: DbSchema): void {
     const transaction = this.db.transaction((nextPayload: DbSchema) => {
       const upsertRecord = this.db.prepare(
-        `INSERT INTO records(resource, id, id_type, data)
-         VALUES (?, ?, ?, ?)
+        `INSERT INTO records(resource, id, data)
+         VALUES (?, ?, ?)
          ON CONFLICT(resource, id) DO UPDATE SET
-           id_type = excluded.id_type,
            data = excluded.data;`
       );
       const upsertSingular = this.db.prepare(
@@ -333,7 +332,7 @@ export class SqliteStore {
               throw new Error(`Duplicate id "${normalized.id}" in source collection "${resource}"`);
             }
             sourceIds.add(normalized.id);
-            upsertRecord.run(resource, normalized.id, 'string', JSON.stringify(normalized.record));
+            upsertRecord.run(resource, normalized.id, JSON.stringify(normalized.record));
           });
           continue;
         }
@@ -454,7 +453,6 @@ export class SqliteStore {
       CREATE TABLE IF NOT EXISTS records (
         resource TEXT NOT NULL,
         id TEXT NOT NULL,
-        id_type TEXT NOT NULL CHECK(id_type IN ('number', 'string')),
         data TEXT NOT NULL,
         PRIMARY KEY(resource, id)
       );
@@ -462,9 +460,38 @@ export class SqliteStore {
         resource TEXT NOT NULL PRIMARY KEY,
         data TEXT NOT NULL
       );
+    `);
+    this.migrateLegacyRecordsSchema();
+    this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_records_resource ON records(resource);
       CREATE INDEX IF NOT EXISTS idx_records_id ON records(id);
     `);
+  }
+
+  private migrateLegacyRecordsSchema(): void {
+    const columns = this.db.prepare('PRAGMA table_info(records);').all() as Array<{ name: string }>;
+    const hasLegacyColumn = columns.some((column) => column.name === 'id_type');
+    if (!hasLegacyColumn) {
+      return;
+    }
+
+    const migrate = this.db.transaction(() => {
+      this.db.exec(`
+        ALTER TABLE records RENAME TO records_legacy;
+        CREATE TABLE records (
+          resource TEXT NOT NULL,
+          id TEXT NOT NULL,
+          data TEXT NOT NULL,
+          PRIMARY KEY(resource, id)
+        );
+        INSERT INTO records(resource, id, data)
+        SELECT resource, id, data
+        FROM records_legacy;
+        DROP TABLE records_legacy;
+      `);
+    });
+
+    migrate();
   }
 
   private registerSqlFunctions(): void {
