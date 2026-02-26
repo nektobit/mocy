@@ -19,7 +19,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "rimraf dist && tsc -p tsconfig.build.json",
     "clean": "rimraf dist",
     "dev": "tsx src/cli.ts",
     "lint": "eslint .",
