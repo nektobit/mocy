@@ -149,4 +149,23 @@ describe('http integration', () => {
 
     await request(app).delete('/profile').expect(404);
   });
+
+  it('serves embedded playground when playgroundDir is configured', async () => {
+    const app = createApp(store, {
+      playgroundDir: path.resolve('packages/mocy-playground/public')
+    });
+
+    const pageRes = await request(app).get('/playground').expect(200);
+    expect(pageRes.text).toContain('mocy playground');
+
+    const configRes = await request(app).get('/playground/config.json').expect(200);
+    const config = configRes.body as { apiBaseUrl?: string };
+    expect(config.apiBaseUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+  });
+
+  it('does not expose playground routes when disabled', async () => {
+    const app = createApp(store);
+    await request(app).get('/playground').expect(404);
+    await request(app).get('/playground/config.json').expect(404);
+  });
 });

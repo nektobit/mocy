@@ -16,6 +16,7 @@ interface ServeOptions {
   idMode: string;
   watchSync: string;
   logRequests: boolean;
+  playground: boolean;
   watch: boolean;
 }
 
@@ -35,6 +36,7 @@ program
   .option('--id-mode <mode>', 'ID generation mode: safe (default) or compat', 'safe')
   .option('--watch-sync <mode>', 'Watch sync mode: safe (default) or replace', 'safe')
   .option('--log-requests', 'Enable request-level logging (method path status duration)')
+  .option('--no-playground', 'Disable embedded playground at /playground')
   .option('--no-watch', 'Disable db.json file watching')
   .action(async (dbPath, options: ServeOptions) => {
     const dbInput = typeof dbPath === 'string' ? dbPath : 'db.json';
@@ -67,6 +69,7 @@ program
       idMode,
       watchSyncMode,
       requestLogging: options.logRequests,
+      playground: options.playground,
       watch: options.watch
     };
 
@@ -81,10 +84,14 @@ program
     }
 
     const running = await startMocyServer(startOptions);
+    const resolvedPort = Number.isFinite(port) ? port : 3000;
 
     process.stdout.write(`mocy is running\n`);
     process.stdout.write(`Loading ${resolvedDb}\n`);
-    process.stdout.write(`URL: http://${host}:${port}\n`);
+    process.stdout.write(`URL: http://${host}:${resolvedPort}\n`);
+    process.stdout.write(
+      `Playground: ${running.playgroundEnabled ? 'enabled at /playground' : 'disabled'}\n`
+    );
 
     const shutdown = async () => {
       await running.close();

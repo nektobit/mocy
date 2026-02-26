@@ -29,7 +29,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "rimraf dist && tsc -p tsconfig.build.json",
+    "build": "rimraf dist && tsc -p tsconfig.build.json && node scripts/copy-playground-assets.mjs",
     "clean": "rimraf dist .coverage",
     "dev": "tsx src/cli.ts",
     "lint": "eslint .",

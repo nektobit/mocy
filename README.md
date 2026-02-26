@@ -25,6 +25,13 @@ npx mocy db.json
 npx mocy db.json
 ```
 
+Playground is enabled by default at `http://localhost:3000/playground`.
+Disable it with:
+
+```bash
+npx mocy db.json --no-playground
+```
+
 Example `db.json`:
 
 ```json
@@ -186,6 +193,8 @@ User-facing runtime/tooling DX backlog is tracked in [`docs/user-dx-roadmap.md`]
 ```bash
 npx mocy-playground --api http://localhost:3000
 ```
+
+Embedded mode in core `mocy` is enabled by default at `/playground`.
 
 ## Why mocy
 

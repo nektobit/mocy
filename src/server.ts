@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { createServer, Server } from 'node:http';
+import { fileURLToPath } from 'node:url';
 import { createApp, RequestLogEntry } from './http/app.js';
 import { RouteMap } from './http/rewrite.js';
 import { IdGenerationMode, ImportMode, SqliteStore, StorageInit } from './storage/sqliteStore.js';
@@ -16,12 +17,14 @@ export interface StartOptions {
   port: number;
   staticDir?: string;
   routesPath?: string;
+  playground?: boolean;
   watch: boolean;
 }
 
 export interface RunningServer {
   close(): Promise<void>;
   store: SqliteStore;
+  playgroundEnabled: boolean;
 }
 
 export async function startMocyServer(options: StartOptions): Promise<RunningServer> {
@@ -43,6 +46,7 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
   const appOptions: {
     routeMap?: RouteMap;
     staticDir?: string;
+    playgroundDir?: string;
     requestLogger?: (entry: RequestLogEntry) => void;
   } = {};
   if (routeMap) {
@@ -50,6 +54,14 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
   }
   if (options.staticDir) {
     appOptions.staticDir = options.staticDir;
+  }
+
+  const playgroundEnabled = options.playground ?? true;
+  if (playgroundEnabled) {
+    const playgroundDir = resolvePlaygroundDir();
+    if (playgroundDir) {
+      appOptions.playgroundDir = playgroundDir;
+    }
   }
   if (options.requestLogging) {
     appOptions.requestLogger = (entry) => {
@@ -73,6 +85,7 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
 
   return {
     store,
+    playgroundEnabled: Boolean(appOptions.playgroundDir),
     async close() {
       if (watcher) {
         await watcher.close();
@@ -115,4 +128,19 @@ function listen(server: Server, host: string, port: number): Promise<void> {
       resolve();
     });
   });
+}
+
+function resolvePlaygroundDir(): string | undefined {
+  const candidates = [
+    fileURLToPath(new URL('./playground/public', import.meta.url)),
+    fileURLToPath(new URL('../packages/mocy-playground/public', import.meta.url))
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return undefined;
 }

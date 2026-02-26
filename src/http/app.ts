@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import path from 'node:path';
 import { parseListQuery } from '../core/query.js';
 import { JsonObject } from '../core/types.js';
 import { SqliteStore } from '../storage/sqliteStore.js';
@@ -14,6 +15,7 @@ export interface RequestLogEntry {
 export interface AppOptions {
   routeMap?: RouteMap;
   staticDir?: string;
+  playgroundDir?: string;
   requestLogger?: (entry: RequestLogEntry) => void;
   plugins?: Array<(app: express.Express) => void>;
 }
@@ -51,7 +53,7 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
       return;
     }
 
-    if (compiledRoutes) {
+    if (compiledRoutes && !req.path.startsWith('/playground')) {
       req.url = rewriteUrl(req.path, compiledRoutes) + (req.url.includes('?') ? `?${req.url.split('?')[1]}` : '');
     }
 
@@ -61,6 +63,33 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
   if (options.staticDir) {
     app.use(express.static(options.staticDir));
   }
+
+  if (options.playgroundDir) {
+    const playgroundDir = path.resolve(options.playgroundDir);
+    const playgroundIndexPath = path.join(playgroundDir, 'index.html');
+
+    app.get('/playground/config.json', (req, res) => {
+      const protocol = req.protocol || 'http';
+      const host = req.get('host');
+      if (!host) {
+        res.status(500).json({ error: 'Unable to resolve request host' });
+        return;
+      }
+      res.json({ apiBaseUrl: `${protocol}://${host}` });
+    });
+
+    app.get('/playground', (_req, res) => {
+      res.sendFile(playgroundIndexPath);
+    });
+
+    app.use(
+      '/playground',
+      express.static(playgroundDir, {
+        index: 'index.html'
+      })
+    );
+  }
+
   options.plugins?.forEach((plugin) => {
     plugin(app);
   });
