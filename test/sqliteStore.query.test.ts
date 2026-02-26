@@ -24,7 +24,12 @@ describe('sqlite list query execution', () => {
 
   afterEach(async () => {
     store.close();
-    await rm(tempDir, { recursive: true, force: true });
+    await rm(tempDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 50
+    });
   });
 
   it('applies combined filters, sorting and page pagination in SQL', () => {

@@ -37,7 +37,12 @@ describe('sqlite schema migration', () => {
   });
 
   afterEach(async () => {
-    await rm(tempDir, { recursive: true, force: true });
+    await rm(tempDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 50
+    });
   });
 
   it('migrates legacy id_type schema and preserves data', () => {

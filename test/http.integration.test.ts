@@ -26,7 +26,12 @@ describe('http integration', () => {
 
   afterEach(async () => {
     store.close();
-    await rm(tempDir, { recursive: true, force: true });
+    await rm(tempDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 50
+    });
   });
 
   it('returns collection list', async () => {
