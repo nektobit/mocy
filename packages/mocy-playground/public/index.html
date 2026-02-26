@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mocy playground</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container row between center">
+        <div class="brand">
+          <strong>mocy playground</strong>
+          <span class="muted">read-only browser explorer</span>
+        </div>
+        <span id="status-badge" class="badge">Idle</span>
+      </div>
+    </header>
+
+    <main class="container shell">
+      <section class="card controls">
+        <label class="label" for="api-url">API base URL</label>
+        <div class="row gap">
+          <input id="api-url" class="input grow" placeholder="http://localhost:3000" />
+          <button id="connect-btn" class="button primary">Connect</button>
+        </div>
+        <p id="error-message" class="help error hidden"></p>
+      </section>
+
+      <section class="workspace">
+        <aside class="card sidebar">
+          <div class="section-title">Resources</div>
+          <div id="resources-list" class="list"></div>
+        </aside>
+
+        <section class="main-panel">
+          <div class="card query-card">
+            <div class="row between center">
+              <h2 id="resource-title" class="title">No resource selected</h2>
+            </div>
+            <div class="row gap">
+              <input
+                id="query-input"
+                class="input grow"
+                placeholder="?_sort=price&_order=asc or categoryId=1"
+              />
+              <button id="run-query-btn" class="button">Run</button>
+            </div>
+            <p id="result-summary" class="help muted"></p>
+          </div>
+
+          <div class="card table-card">
+            <div class="table-wrap">
+              <table id="result-table" class="table"></table>
+            </div>
+          </div>
+
+          <div class="card details-card">
+            <div class="section-title">Selected item</div>
+            <pre id="details-json" class="json-box">{}</pre>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

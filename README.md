@@ -179,6 +179,14 @@ AI-focused DX backlog is tracked in [`docs/ai-dx-roadmap.md`](./docs/ai-dx-roadm
 
 User-facing runtime/tooling DX backlog is tracked in [`docs/user-dx-roadmap.md`](./docs/user-dx-roadmap.md).
 
+## Playground
+
+`mocy-playground` is a lightweight browser explorer package for running mocy APIs.
+
+```bash
+npx mocy-playground --api http://localhost:3000
+```
+
 ## Why mocy
 
 - Better performance for write-heavy usage (no full JSON rewrite per request)
