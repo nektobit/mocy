@@ -1,0 +1,133 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "title": "Trail Running Shoes X1",
+      "slug": "trail-running-shoes-x1",
+      "description": "Lightweight trail shoes with reinforced grip for mixed terrain.",
+      "price": 129.99,
+      "currency": "USD",
+      "categoryId": 1,
+      "brandId": 1,
+      "stock": 42,
+      "rating": 4.6,
+      "tags": ["sport", "outdoor"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-1/640/480"
+    },
+    {
+      "id": 2,
+      "title": "City Backpack 24L",
+      "slug": "city-backpack-24l",
+      "description": "Water-resistant everyday backpack with padded laptop sleeve.",
+      "price": 79.0,
+      "currency": "USD",
+      "categoryId": 2,
+      "brandId": 2,
+      "stock": 65,
+      "rating": 4.4,
+      "tags": ["bags", "daily"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-2/640/480"
+    },
+    {
+      "id": 3,
+      "title": "Wireless Headphones Pro",
+      "slug": "wireless-headphones-pro",
+      "description": "Noise-cancelling over-ear headphones with 40h battery life.",
+      "price": 199.5,
+      "currency": "USD",
+      "categoryId": 3,
+      "brandId": 3,
+      "stock": 28,
+      "rating": 4.8,
+      "tags": ["audio", "wireless"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-3/640/480"
+    },
+    {
+      "id": 4,
+      "title": "Smartwatch S2",
+      "slug": "smartwatch-s2",
+      "description": "Fitness and health smartwatch with GPS and sleep tracking.",
+      "price": 249.0,
+      "currency": "USD",
+      "categoryId": 3,
+      "brandId": 3,
+      "stock": 19,
+      "rating": 4.5,
+      "tags": ["wearable", "health"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-4/640/480"
+    },
+    {
+      "id": 5,
+      "title": "Office Chair Ergo Plus",
+      "slug": "office-chair-ergo-plus",
+      "description": "Ergonomic mesh chair with lumbar support and adjustable armrests.",
+      "price": 319.0,
+      "currency": "USD",
+      "categoryId": 4,
+      "brandId": 4,
+      "stock": 14,
+      "rating": 4.7,
+      "tags": ["furniture", "office"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-5/640/480"
+    },
+    {
+      "id": 6,
+      "title": "Standing Desk 140",
+      "slug": "standing-desk-140",
+      "description": "Electric standing desk with memory presets and cable tray.",
+      "price": 499.0,
+      "currency": "USD",
+      "categoryId": 4,
+      "brandId": 4,
+      "stock": 11,
+      "rating": 4.9,
+      "tags": ["furniture", "workspace"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-6/640/480"
+    },
+    {
+      "id": 7,
+      "title": "Hiking Jacket LT",
+      "slug": "hiking-jacket-lt",
+      "description": "Windproof and breathable hiking shell for changing weather.",
+      "price": 159.0,
+      "currency": "USD",
+      "categoryId": 1,
+      "brandId": 1,
+      "stock": 33,
+      "rating": 4.3,
+      "tags": ["apparel", "outdoor"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-7/640/480"
+    },
+    {
+      "id": 8,
+      "title": "Travel Organizer Set",
+      "slug": "travel-organizer-set",
+      "description": "Packing cubes set for carry-on and checked luggage.",
+      "price": 39.99,
+      "currency": "USD",
+      "categoryId": 2,
+      "brandId": 2,
+      "stock": 80,
+      "rating": 4.2,
+      "tags": ["travel", "accessories"],
+      "thumbnail": "https://picsum.photos/seed/mocy-product-8/640/480"
+    }
+  ],
+  "categories": [
+    { "id": 1, "name": "Outdoor", "slug": "outdoor" },
+    { "id": 2, "name": "Travel", "slug": "travel" },
+    { "id": 3, "name": "Electronics", "slug": "electronics" },
+    { "id": 4, "name": "Office", "slug": "office" }
+  ],
+  "brands": [
+    { "id": 1, "name": "NorthPeak", "country": "US" },
+    { "id": 2, "name": "UrbanWay", "country": "DE" },
+    { "id": 3, "name": "SoundHive", "country": "JP" },
+    { "id": 4, "name": "DeskForge", "country": "SE" }
+  ],
+  "store": {
+    "name": "mocy catalog demo",
+    "currency": "USD",
+    "supportEmail": "support@example.com"
+  }
+}

@@ -48,6 +48,33 @@ curl "http://localhost:3000/posts?_sort=title&_page=1&_per_page=10"
 curl -X POST http://localhost:3000/posts -H "content-type: application/json" -d '{"title":"New"}'
 ```
 
+## AI Quickstart (REST + MCP)
+
+Use the official catalog example dataset: [`examples/catalog/db.json`](./examples/catalog/db.json).
+
+Start REST API:
+
+```bash
+npx mocy examples/catalog/db.json --port 3000
+```
+
+Start MCP server in another terminal:
+
+```bash
+npx mocy-mcp examples/catalog/db.json
+```
+
+`mocy-mcp` is read-only by design.
+
+Sample REST queries against the catalog:
+
+```bash
+curl http://localhost:3000/products
+curl "http://localhost:3000/products?categoryId=1&_sort=price&_order=asc"
+curl http://localhost:3000/categories
+curl http://localhost:3000/brands
+```
+
 ## SQLite (Transparent)
 
 mocy uses SQLite internally for speed and safety; you still work with `db.json`.
@@ -145,6 +172,8 @@ Published package usage:
 ```bash
 npx mocy-mcp db.json
 ```
+
+MCP client setup examples are in [`docs/mcp-clients.md`](./docs/mcp-clients.md).
 
 ## Why mocy
 
