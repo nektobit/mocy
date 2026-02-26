@@ -177,6 +177,8 @@ MCP client setup examples are in [`docs/mcp-clients.md`](./docs/mcp-clients.md).
 
 AI-focused DX backlog is tracked in [`docs/ai-dx-roadmap.md`](./docs/ai-dx-roadmap.md).
 
+User-facing runtime/tooling DX backlog is tracked in [`docs/user-dx-roadmap.md`](./docs/user-dx-roadmap.md).
+
 ## Why mocy
 
 - Better performance for write-heavy usage (no full JSON rewrite per request)
