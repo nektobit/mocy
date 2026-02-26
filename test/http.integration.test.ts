@@ -155,7 +155,10 @@ describe('http integration', () => {
       playgroundDir: path.resolve('packages/mocy-playground/public')
     });
 
-    const pageRes = await request(app).get('/playground').expect(200);
+    const redirectRes = await request(app).get('/playground').expect(302);
+    expect(redirectRes.headers.location).toBe('/playground/');
+
+    const pageRes = await request(app).get('/playground/').expect(200);
     expect(pageRes.text).toContain('mocy playground');
 
     const configRes = await request(app).get('/playground/config.json').expect(200);

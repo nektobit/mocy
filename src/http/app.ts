@@ -66,7 +66,6 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
 
   if (options.playgroundDir) {
     const playgroundDir = path.resolve(options.playgroundDir);
-    const playgroundIndexPath = path.join(playgroundDir, 'index.html');
 
     app.get('/playground/config.json', (req, res) => {
       const protocol = req.protocol || 'http';
@@ -78,8 +77,8 @@ export function createApp(store: SqliteStore, options: AppOptions = {}): express
       res.json({ apiBaseUrl: `${protocol}://${host}` });
     });
 
-    app.get('/playground', (_req, res) => {
-      res.sendFile(playgroundIndexPath);
+    app.get(/^\/playground$/u, (_req, res) => {
+      res.redirect(302, '/playground/');
     });
 
     app.use(
