@@ -111,7 +111,7 @@ async function connect() {
 
   try {
     const root = await requestJson('/');
-    const discoveredResources = discoverResources(root);
+    const discoveredResources = await discoverResources(root);
 
     resources.set(discoveredResources);
     selectedResourceName.set(discoveredResources[0]?.name ?? null);
@@ -171,9 +171,38 @@ async function loadSelectedResource() {
   }
 }
 
-function discoverResources(rootPayload) {
+async function discoverResources(rootPayload) {
   if (!isPlainObject(rootPayload)) {
     throw new Error('API root must return a JSON object');
+  }
+
+  if (
+    Array.isArray(rootPayload.resources) &&
+    rootPayload.resources.every((entry) => typeof entry === 'string')
+  ) {
+    const names = rootPayload.resources;
+    const resolved = await Promise.all(
+      names.map(async (name) => {
+        try {
+          const encoded = encodeURIComponent(name);
+          const payload = await requestJson(`/${encoded}?_limit=1`);
+          if (Array.isArray(payload)) {
+            return { name, kind: 'collection' };
+          }
+          if (isPlainObject(payload) && Array.isArray(payload.data)) {
+            return { name, kind: 'collection' };
+          }
+          if (isPlainObject(payload)) {
+            return { name, kind: 'singular' };
+          }
+          return null;
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    return resolved.filter((entry) => entry !== null);
   }
 
   return Object.entries(rootPayload).flatMap(([name, value]) => {
