@@ -12,6 +12,9 @@
   },
   "license": "MIT",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "bin": {
     "mocy": "dist/cli.js"
   },
@@ -35,7 +38,20 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
+    "mcp:dev": "npm --workspace packages/mocy-mcp run dev",
+    "mcp:lint": "npm --workspace packages/mocy-mcp run lint",
+    "mcp:typecheck": "npm --workspace packages/mocy-mcp run typecheck",
+    "mcp:test": "npm --workspace packages/mocy-mcp run test",
+    "mcp:build": "npm --workspace packages/mocy-mcp run build",
+    "check:lockstep": "node scripts/check-lockstep.mjs",
+    "release:bump": "node scripts/bump-lockstep-version.mjs",
+    "release:notes": "node scripts/generate-release-notes.mjs",
+    "release:notes:write": "node scripts/generate-release-notes.mjs --write",
+    "verify:core": "npm run lint && npm run typecheck && npm test && npm run build",
+    "verify:mcp": "npm run mcp:lint && npm run mcp:typecheck && npm run mcp:test && npm run mcp:build",
+    "verify:workspace": "npm run check:lockstep && npm run verify:core && npm run verify:mcp",
+    "release:verify": "npm run verify:workspace",
+    "prepublishOnly": "npm run release:verify"
   },
   "keywords": [
     "json-server",

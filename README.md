@@ -127,6 +127,19 @@ mocy db.json --log-requests
 
 Log format includes method, path, status and duration (ms).
 
+## MCP Adapter
+
+Official MCP support is delivered as a separate package: `mocy-mcp`.
+
+It is part of the same product line, but physically separated from core `mocy`
+to keep REST server releases stable and MCP development independent.
+
+In this repository it lives at `packages/mocy-mcp` and can be started with:
+
+```bash
+npx tsx packages/mocy-mcp/src/cli.ts db.json
+```
+
 ## Why mocy
 
 - Better performance for write-heavy usage (no full JSON rewrite per request)
@@ -140,6 +153,22 @@ npm install
 npm run lint
 npm run typecheck
 npm test
+```
+
+Lockstep release workflow (`mocy` + `mocy-mcp`):
+
+```bash
+# 1) bump both package versions together
+npm run release:bump -- patch
+
+# 2) generate unified release notes (preview)
+npm run release:notes
+
+# 3) write one entry into CHANGELOG.md
+npm run release:notes:write
+
+# 4) run full workspace verification
+npm run release:verify
 ```
 
 Contributing details are in [`CONTRIBUTING.md`](./CONTRIBUTING.md).
