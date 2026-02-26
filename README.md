@@ -164,6 +164,9 @@ npm run release:bump -- patch
 # 2) generate unified release notes (preview)
 npm run release:notes
 
+# optional: generate notes for a specific range [fromRef] [toRef]
+npm run release:notes -- v0.2.0 HEAD
+
 # 3) write one entry into CHANGELOG.md
 npm run release:notes:write
 

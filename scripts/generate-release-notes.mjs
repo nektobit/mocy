@@ -44,6 +44,7 @@ try {
 
 function parseArgs(argv) {
   const parsed = {};
+  const positional = [];
 
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
@@ -57,6 +58,9 @@ function parseArgs(argv) {
       case '--from':
         parsed.from = requireValue(argv, ++i, '--from');
         break;
+      case '--since':
+        parsed.from = requireValue(argv, ++i, '--since');
+        break;
       case '--to':
         parsed.to = requireValue(argv, ++i, '--to');
         break;
@@ -64,8 +68,23 @@ function parseArgs(argv) {
         parsed.changelog = requireValue(argv, ++i, '--changelog');
         break;
       default:
-        throw new Error(`Unknown argument "${token}"`);
+        if (token.startsWith('--')) {
+          throw new Error(`Unknown argument "${token}"`);
+        }
+        positional.push(token);
     }
+  }
+
+  if (positional.length > 2) {
+    throw new Error('Too many positional arguments. Use: [fromRef] [toRef]');
+  }
+
+  if (!parsed.from && positional[0]) {
+    parsed.from = positional[0];
+  }
+
+  if (!parsed.to && positional[1]) {
+    parsed.to = positional[1];
   }
 
   return parsed;
