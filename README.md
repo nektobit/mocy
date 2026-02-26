@@ -129,7 +129,7 @@ Log format includes method, path, status and duration (ms).
 
 ## MCP Adapter
 
-Official MCP support is delivered as a separate package: `mocy-mcp`.
+Official MCP support is delivered as a separate package: `@mocy/mcp`.
 
 It is part of the same product line, but physically separated from core `mocy`
 to keep REST server releases stable and MCP development independent.
@@ -138,6 +138,12 @@ In this repository it lives at `packages/mocy-mcp` and can be started with:
 
 ```bash
 npx tsx packages/mocy-mcp/src/cli.ts db.json
+```
+
+Published package usage:
+
+```bash
+npx @mocy/mcp db.json
 ```
 
 ## Why mocy
@@ -155,7 +161,7 @@ npm run typecheck
 npm test
 ```
 
-Lockstep release workflow (`mocy` + `mocy-mcp`):
+Lockstep release workflow (`mocy` + `@mocy/mcp`):
 
 ```bash
 # 1) bump both package versions together

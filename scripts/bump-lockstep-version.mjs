@@ -12,10 +12,12 @@ const mcpPath = path.resolve('packages/mocy-mcp/package.json');
 
 const rootPackage = readJson(rootPath);
 const mcpPackage = readJson(mcpPath);
+const rootName = rootPackage.name;
+const mcpName = mcpPackage.name;
 
 if (rootPackage.version !== mcpPackage.version) {
   console.error(
-    `Lockstep version mismatch before bump: mocy=${rootPackage.version}, mocy-mcp=${mcpPackage.version}`
+    `Lockstep version mismatch before bump: ${rootName}=${rootPackage.version}, ${mcpName}=${mcpPackage.version}`
   );
   process.exit(1);
 }
@@ -28,7 +30,7 @@ mcpPackage.version = nextVersion;
 writeJson(rootPath, rootPackage);
 writeJson(mcpPath, mcpPackage);
 
-console.log(`Bumped lockstep version: ${previousVersion} -> ${nextVersion}`);
+console.log(`Bumped lockstep version: ${rootName} + ${mcpName}: ${previousVersion} -> ${nextVersion}`);
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf8'));

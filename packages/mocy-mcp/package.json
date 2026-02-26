@@ -1,10 +1,22 @@
 {
-  "name": "mocy-mcp",
+  "name": "@mocy/mcp",
   "version": "0.2.1",
-  "private": true,
+  "private": false,
   "description": "Official MCP adapter for mocy.",
+  "homepage": "https://github.com/nektobit/mocy/tree/main/packages/mocy-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/nektobit/mocy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nektobit/mocy.git",
+    "directory": "packages/mocy-mcp"
+  },
   "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "mocy-mcp": "dist/cli.js"
   },
@@ -25,13 +37,14 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "chokidar": "^4.0.3",
     "commander": "^14.0.1",
-    "mocy": "file:../..",
+    "mocy": "^0.2.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {

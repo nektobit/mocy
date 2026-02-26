@@ -9,10 +9,14 @@ try {
 
   const rootPackage = readJson(rootPackagePath);
   const mcpPackage = readJson(mcpPackagePath);
+  const packageNames = {
+    root: rootPackage.name,
+    mcp: mcpPackage.name
+  };
 
   if (rootPackage.version !== mcpPackage.version) {
     throw new Error(
-      `Lockstep version mismatch: mocy=${rootPackage.version}, mocy-mcp=${mcpPackage.version}`
+      `Lockstep version mismatch: ${packageNames.root}=${rootPackage.version}, ${packageNames.mcp}=${mcpPackage.version}`
     );
   }
 
@@ -23,7 +27,8 @@ try {
   const notes = buildReleaseNotes({
     releaseVersion,
     fromRef,
-    commits
+    commits,
+    packageNames
   });
 
   if (args.write) {
@@ -148,7 +153,7 @@ function quoteRef(ref) {
   return `"${String(ref).replaceAll('"', '\\"')}"`;
 }
 
-function buildReleaseNotes({ releaseVersion, fromRef, commits }) {
+function buildReleaseNotes({ releaseVersion, fromRef, commits, packageNames }) {
   const date = new Date().toISOString().slice(0, 10);
   const sections = categorizeCommits(commits);
   const fromLabel = fromRef ? `since ${fromRef}` : 'since project start';
@@ -157,8 +162,8 @@ function buildReleaseNotes({ releaseVersion, fromRef, commits }) {
   lines.push(`## v${releaseVersion} (${date})`);
   lines.push('');
   lines.push('### Packages');
-  lines.push(`- mocy@${releaseVersion}`);
-  lines.push(`- mocy-mcp@${releaseVersion}`);
+  lines.push(`- ${packageNames.root}@${releaseVersion}`);
+  lines.push(`- ${packageNames.mcp}@${releaseVersion}`);
   lines.push('');
   lines.push(`### Changes ${fromLabel}`);
 

@@ -1,11 +1,11 @@
-# mocy-mcp
+# @mocy/mcp
 
 Official MCP adapter for `mocy`.
 
 ## Usage
 
 ```bash
-mocy-mcp db.json
+npx @mocy/mcp db.json
 ```
 
 Or via npm script in this workspace:
