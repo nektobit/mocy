@@ -1,6 +1,6 @@
 {
   "name": "mocy-mcp",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": false,
   "description": "Official MCP adapter for mocy.",
   "homepage": "https://github.com/nektobit/mocy/tree/main/packages/mocy-mcp#readme",
