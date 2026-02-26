@@ -1,6 +1,6 @@
 {
-  "name": "@mocy/mcp",
-  "version": "0.2.1",
+  "name": "mocy-mcp",
+  "version": "0.2.3",
   "private": false,
   "description": "Official MCP adapter for mocy.",
   "homepage": "https://github.com/nektobit/mocy/tree/main/packages/mocy-mcp#readme",
@@ -44,7 +44,7 @@
     "@modelcontextprotocol/sdk": "^1.27.1",
     "chokidar": "^4.0.3",
     "commander": "^14.0.1",
-    "mocy": "^0.2.1",
+    "mocy": "^0.2.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
