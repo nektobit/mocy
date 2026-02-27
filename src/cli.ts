@@ -42,7 +42,7 @@ program
     const dbInput = typeof dbPath === 'string' ? dbPath : 'db.json';
     const resolvedDb = path.resolve(dbInput);
     if (!existsSync(resolvedDb)) {
-      process.stderr.write(`File not found: ${resolvedDb}\n`);
+      process.stderr.write(buildMissingDbHelpMessage(resolvedDb, dbInput));
       process.exitCode = 1;
       return;
     }
@@ -141,6 +141,23 @@ function parseWatchSyncMode(value: string): ImportMode | null {
     return 'replace';
   }
   return null;
+}
+
+function buildMissingDbHelpMessage(resolvedDb: string, dbInput: string): string {
+  const startCommand = `mocy ${dbInput}`;
+  const exampleJson = ['{', '  "posts": [{ "id": 1, "title": "Hello mocy" }]', '}'].join('\n');
+
+  return [
+    `File not found: ${resolvedDb}`,
+    '',
+    'Create a minimal test file and start again:',
+    '',
+    '1. Save this as db.json:',
+    exampleJson,
+    '',
+    `2. Run: ${startCommand}`,
+    ''
+  ].join('\n');
 }
 
 void program.parseAsync(process.argv);
