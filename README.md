@@ -19,6 +19,18 @@ npm i mocy
 npx mocy db.json
 ```
 
+## Playground
+
+`mocy-playground` is a lightweight browser explorer package for running mocy APIs.
+
+![mocy playground screenshot](./docs/Screenshot_playground.png)
+
+```bash
+npx mocy-playground --api http://localhost:3000
+```
+
+Embedded mode in core `mocy` is enabled by default at `/playground`.
+
 ## Quickstart
 
 ```bash
@@ -185,18 +197,6 @@ MCP client setup examples are in [`docs/mcp-clients.md`](./docs/mcp-clients.md).
 AI-focused DX backlog is tracked in [`docs/ai-dx-roadmap.md`](./docs/ai-dx-roadmap.md).
 
 User-facing runtime/tooling DX backlog is tracked in [`docs/user-dx-roadmap.md`](./docs/user-dx-roadmap.md).
-
-## Playground
-
-`mocy-playground` is a lightweight browser explorer package for running mocy APIs.
-
-![mocy playground screenshot](./docs/Screenshot_playground.png)
-
-```bash
-npx mocy-playground --api http://localhost:3000
-```
-
-Embedded mode in core `mocy` is enabled by default at `/playground`.
 
 ## Why mocy
 
