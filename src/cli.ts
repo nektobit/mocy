@@ -2,7 +2,9 @@
 
 import { Command } from 'commander';
 import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { createInterface } from 'node:readline/promises';
 import { IdGenerationMode, ImportMode, SqliteStore } from './storage/sqliteStore.js';
 import { startMocyServer } from './server.js';
 
@@ -42,9 +44,13 @@ program
     const dbInput = typeof dbPath === 'string' ? dbPath : 'db.json';
     const resolvedDb = path.resolve(dbInput);
     if (!existsSync(resolvedDb)) {
-      process.stderr.write(buildMissingDbHelpMessage(resolvedDb, dbInput));
-      process.exitCode = 1;
-      return;
+      const created = await maybeCreateMinimalDbFile(resolvedDb);
+      if (!created) {
+        process.stderr.write(buildMissingDbHelpMessage(resolvedDb, dbInput));
+        process.exitCode = 1;
+        return;
+      }
+      process.stdout.write(`Created minimal test db.json at ${resolvedDb}\n`);
     }
 
     const port = Number.parseInt(options.port, 10);
@@ -143,6 +149,39 @@ function parseWatchSyncMode(value: string): ImportMode | null {
   return null;
 }
 
+async function maybeCreateMinimalDbFile(targetPath: string): Promise<boolean> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    return false;
+  }
+
+  const confirm = await askForConfirmation(
+    `Файл не обнаружен: ${targetPath}\nСоздать тестовый db.json? [Y/n] `
+  );
+  if (!confirm) {
+    return false;
+  }
+
+  const minimalDb = ['{', '  "posts": [{ "id": 1, "title": "Hello mocy" }]', '}'].join('\n');
+  await mkdir(path.dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, `${minimalDb}\n`, 'utf8');
+
+  return true;
+}
+
+async function askForConfirmation(prompt: string): Promise<boolean> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  try {
+    const answer = (await rl.question(prompt)).trim().toLowerCase();
+    return answer === '' || answer === 'y' || answer === 'yes' || answer === 'д' || answer === 'да';
+  } finally {
+    rl.close();
+  }
+}
+
 function buildMissingDbHelpMessage(resolvedDb: string, dbInput: string): string {
   const startCommand = `mocy ${dbInput}`;
   const exampleJson = ['{', '  "posts": [{ "id": 1, "title": "Hello mocy" }]', '}'].join('\n');
@@ -150,7 +189,7 @@ function buildMissingDbHelpMessage(resolvedDb: string, dbInput: string): string 
   return [
     `File not found: ${resolvedDb}`,
     '',
-    'Create a minimal test file and start again:',
+    'Create a minimal test file and start again (or rerun in interactive terminal to auto-create):',
     '',
     '1. Save this as db.json:',
     exampleJson,
