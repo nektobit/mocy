@@ -190,6 +190,8 @@ User-facing runtime/tooling DX backlog is tracked in [`docs/user-dx-roadmap.md`]
 
 `mocy-playground` is a lightweight browser explorer package for running mocy APIs.
 
+![mocy playground screenshot](./docs/Screenshot_playground.png)
+
 ```bash
 npx mocy-playground --api http://localhost:3000
 ```
