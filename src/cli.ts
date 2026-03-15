@@ -32,7 +32,7 @@ program
   .argument('[db]', 'Path to db.json', 'db.json')
   .option('-p, --port <number>', 'Port number', '3000')
   .option('-H, --host <host>', 'Host address', 'localhost')
-  .option('-s, --static <dir>', 'Static directory path')
+  .option('-s, --static <dir>', 'Static directory path (relative to db.json directory)')
   .option('-r, --routes <file>', 'Routes rewrite file path')
   .option('--sqlite <file>', 'SQLite file path')
   .option('--id-mode <mode>', 'ID generation mode: safe (default) or compat', 'safe')
@@ -90,11 +90,11 @@ program
     }
 
     const running = await startMocyServer(startOptions);
-    const resolvedPort = Number.isFinite(port) ? port : 3000;
 
     process.stdout.write(`mocy is running\n`);
     process.stdout.write(`Loading ${resolvedDb}\n`);
-    process.stdout.write(`URL: http://${host}:${resolvedPort}\n`);
+    process.stdout.write(`URL: ${running.url}\n`);
+    process.stdout.write(`Static: ${running.resolvedStaticDir ?? 'disabled'}\n`);
     process.stdout.write(
       `Playground: ${running.playgroundEnabled ? 'enabled at /playground' : 'disabled'}\n`
     );

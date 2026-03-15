@@ -154,6 +154,28 @@ Supported baseline:
 - Route rewrites (`--routes routes.json`)
 - Static files (`--static public`)
 
+## Static Files
+
+Serve a static directory alongside the API:
+
+```bash
+mocy db.json --static public
+```
+
+Path resolution rule:
+
+- Relative `--static` paths are resolved from the directory containing `db.json`.
+- Absolute `--static` paths are used as-is.
+- Startup output prints the resolved static directory.
+
+Windows-safe example:
+
+```powershell
+npx mocy .\demo\db.json --static public
+```
+
+In this example, `public` resolves to `.\demo\public`, not the shell's current working directory.
+
 ## ID Generation Modes
 
 For collection `POST` without an explicit `id`:

@@ -25,11 +25,16 @@ export interface RunningServer {
   close(): Promise<void>;
   store: SqliteStore;
   playgroundEnabled: boolean;
+  host: string;
+  port: number;
+  url: string;
+  resolvedStaticDir: string | undefined;
 }
 
 export async function startMocyServer(options: StartOptions): Promise<RunningServer> {
   const dbPath = path.resolve(options.dbPath);
   const sqlitePath = path.resolve(options.sqlitePath ?? path.join(path.dirname(dbPath), '.mocy', 'mocy.sqlite'));
+  const resolvedStaticDir = resolveStaticDir(dbPath, options.staticDir);
 
   const storageInit: StorageInit = {
     sourcePath: dbPath,
@@ -52,8 +57,8 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
   if (routeMap) {
     appOptions.routeMap = routeMap;
   }
-  if (options.staticDir) {
-    appOptions.staticDir = options.staticDir;
+  if (resolvedStaticDir) {
+    appOptions.staticDir = resolvedStaticDir;
   }
 
   const playgroundEnabled = options.playground ?? true;
@@ -75,6 +80,12 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
 
   const httpServer = createServer(app);
   await listen(httpServer, options.host, options.port);
+  const address = httpServer.address();
+  if (!address || typeof address === 'string') {
+    throw new Error('Unable to determine server address');
+  }
+  const host = options.host === '0.0.0.0' ? '127.0.0.1' : options.host;
+  const url = `http://${host}:${address.port}`;
 
   let watcher: FileWatcher | undefined;
   if (options.watch) {
@@ -86,6 +97,10 @@ export async function startMocyServer(options: StartOptions): Promise<RunningSer
   return {
     store,
     playgroundEnabled: Boolean(appOptions.playgroundDir),
+    host,
+    port: address.port,
+    url,
+    resolvedStaticDir,
     async close() {
       if (watcher) {
         await watcher.close();
@@ -143,4 +158,16 @@ function resolvePlaygroundDir(): string | undefined {
   }
 
   return undefined;
+}
+
+function resolveStaticDir(dbPath: string, staticDir: string | undefined): string | undefined {
+  if (!staticDir) {
+    return undefined;
+  }
+
+  if (path.isAbsolute(staticDir)) {
+    return staticDir;
+  }
+
+  return path.resolve(path.dirname(dbPath), staticDir);
 }
